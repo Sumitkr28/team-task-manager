@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { getMembership } from "@/lib/rbac";
 import ProjectBoard from "@/components/ProjectBoard";
 import MembersPanel from "@/components/MembersPanel";
+import { FolderKanban } from "@/components/Icons";
 
 export const dynamic = "force-dynamic";
 
@@ -37,14 +39,33 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="space-y-6">
+      <div>
+        <Link
+          href="/projects"
+          className="text-xs text-zinc-500 hover:text-zinc-300 transition inline-flex items-center gap-1"
+        >
+          ← All projects
+        </Link>
+      </div>
       <header className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">{project.name}</h1>
-          {project.description && (
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">{project.description}</p>
-          )}
+        <div className="flex items-start gap-4">
+          <div className="grid place-items-center w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/30 to-violet-500/30 border border-white/10 shrink-0">
+            <FolderKanban width={22} height={22} className="text-white/90" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight">{project.name}</h1>
+            {project.description && (
+              <p className="text-sm text-zinc-400 mt-1.5 max-w-2xl">{project.description}</p>
+            )}
+          </div>
         </div>
-        <span className={`text-xs px-2 py-0.5 rounded ${membership.role === "ADMIN" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"}`}>
+        <span
+          className={`text-[10px] uppercase tracking-wide font-semibold px-2 py-1 rounded border shrink-0 ${
+            membership.role === "ADMIN"
+              ? "bg-indigo-500/15 text-indigo-300 border-indigo-500/20"
+              : "bg-white/5 text-zinc-400 border-white/10"
+          }`}
+        >
           You: {membership.role}
         </span>
       </header>
@@ -53,7 +74,11 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
         <ProjectBoard
           projectId={project.id}
           initialTasks={tasks}
-          members={project.members.map((m) => ({ id: m.user.id, name: m.user.name, email: m.user.email }))}
+          members={project.members.map((m) => ({
+            id: m.user.id,
+            name: m.user.name,
+            email: m.user.email,
+          }))}
           currentUserId={user.id}
           myRole={membership.role}
         />

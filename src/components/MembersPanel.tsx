@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Users, Plus } from "@/components/Icons";
 
 type Member = {
   id: string;
@@ -69,66 +70,127 @@ export default function MembersPanel({
   }
 
   return (
-    <aside className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-4 space-y-4 h-fit">
-      <h2 className="font-semibold">Members ({members.length})</h2>
-      <ul className="space-y-2">
-        {members.map((m) => (
-          <li key={m.id} className="flex items-center justify-between gap-2 text-sm">
-            <div className="min-w-0">
-              <div className="font-medium truncate">{m.user.name}{m.user.id === currentUserId && " (you)"}</div>
-              <div className="text-xs text-zinc-500 truncate">{m.user.email}</div>
-            </div>
-            <div className="flex items-center gap-1">
-              {myRole === "ADMIN" && m.user.id !== currentUserId ? (
-                <select
-                  value={m.role}
-                  onChange={(e) => changeRole(m.user.id, e.target.value as "ADMIN" | "MEMBER")}
-                  className="text-xs rounded border border-zinc-300 dark:border-zinc-700 bg-transparent px-1 py-0.5"
-                >
-                  <option value="ADMIN">Admin</option>
-                  <option value="MEMBER">Member</option>
-                </select>
-              ) : (
-                <span className={`text-xs px-1.5 py-0.5 rounded ${m.role === "ADMIN" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"}`}>
-                  {m.role}
+    <aside className="rounded-xl border border-white/5 bg-zinc-900/40 backdrop-blur-sm p-5 space-y-4 h-fit lg:sticky lg:top-20">
+      <h2 className="font-semibold flex items-center gap-2">
+        <Users width={16} height={16} className="text-indigo-400" />
+        Members
+        <span className="text-xs text-zinc-500 font-normal">({members.length})</span>
+      </h2>
+      <ul className="space-y-2.5">
+        {members.map((m) => {
+          const initials = m.user.name
+            .split(" ")
+            .map((s) => s[0])
+            .join("")
+            .slice(0, 2)
+            .toUpperCase();
+          return (
+            <li key={m.id} className="flex items-center justify-between gap-2 text-sm">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className="grid place-items-center w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500/30 to-violet-500/30 border border-white/10 text-[11px] font-medium text-white shrink-0">
+                  {initials}
                 </span>
-              )}
-              {myRole === "ADMIN" && m.user.id !== currentUserId && (
-                <button onClick={() => remove(m.user.id)} className="text-xs text-red-600 hover:underline">
-                  Remove
-                </button>
-              )}
-            </div>
-          </li>
-        ))}
+                <div className="min-w-0">
+                  <div className="font-medium text-zinc-100 truncate">
+                    {m.user.name}
+                    {m.user.id === currentUserId && (
+                      <span className="text-zinc-500 font-normal"> · you</span>
+                    )}
+                  </div>
+                  <div className="text-xs text-zinc-500 truncate">{m.user.email}</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                {myRole === "ADMIN" && m.user.id !== currentUserId ? (
+                  <select
+                    value={m.role}
+                    aria-label="Role"
+                    onChange={(e) => changeRole(m.user.id, e.target.value as "ADMIN" | "MEMBER")}
+                    className="text-xs rounded-md border border-white/10 bg-white/5 hover:bg-white/10 text-zinc-200 px-1.5 py-1 outline-none transition"
+                  >
+                    <option value="ADMIN">Admin</option>
+                    <option value="MEMBER">Member</option>
+                  </select>
+                ) : (
+                  <span
+                    className={`text-[10px] uppercase tracking-wide font-semibold px-1.5 py-0.5 rounded border ${
+                      m.role === "ADMIN"
+                        ? "bg-indigo-500/15 text-indigo-300 border-indigo-500/20"
+                        : "bg-white/5 text-zinc-400 border-white/10"
+                    }`}
+                  >
+                    {m.role}
+                  </span>
+                )}
+                {myRole === "ADMIN" && m.user.id !== currentUserId && (
+                  <button
+                    type="button"
+                    onClick={() => remove(m.user.id)}
+                    className="text-xs text-zinc-500 hover:text-red-400 px-1.5 py-1 rounded transition"
+                    aria-label="Remove member"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            </li>
+          );
+        })}
       </ul>
 
       {myRole === "ADMIN" && (
-        <form onSubmit={invite} className="space-y-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
-          <h3 className="font-medium text-sm">Invite a member</h3>
+        <form onSubmit={invite} className="space-y-2 pt-3 border-t border-white/5">
+          <h3 className="font-medium text-sm flex items-center gap-1.5">
+            <Plus width={13} height={13} className="text-indigo-400" />
+            Invite a member
+          </h3>
           <input
             type="email"
             required
             placeholder="email@example.com"
+            aria-label="Member email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded border border-zinc-300 dark:border-zinc-700 bg-transparent px-2 py-1 text-sm"
+            className="member-input"
           />
           <select
             value={role}
+            aria-label="Role"
             onChange={(e) => setRole(e.target.value as "ADMIN" | "MEMBER")}
-            className="w-full rounded border border-zinc-300 dark:border-zinc-700 bg-transparent px-2 py-1 text-sm"
+            className="member-input"
           >
             <option value="MEMBER">Member</option>
             <option value="ADMIN">Admin</option>
           </select>
-          {error && <p className="text-xs text-red-600">{error}</p>}
-          <button type="submit" disabled={loading} className="w-full px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm disabled:opacity-50">
+          {error && (
+            <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-md px-2 py-1.5">
+              {error}
+            </p>
+          )}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full px-3 py-1.5 rounded-md bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500 text-white text-sm font-medium transition disabled:opacity-50"
+          >
             {loading ? "Inviting..." : "Invite"}
           </button>
           <p className="text-xs text-zinc-500">User must already have an account.</p>
         </form>
       )}
+      <style>{`
+        .member-input {
+          width: 100%;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 6px;
+          padding: 0.4rem 0.625rem;
+          color: #fafafa;
+          font-size: 0.875rem;
+          transition: border-color 0.15s, background 0.15s;
+        }
+        .member-input:hover { background: rgba(255,255,255,0.05); }
+        .member-input:focus { background: rgba(255,255,255,0.06); border-color: rgba(99,102,241,0.5); outline: none; }
+      `}</style>
     </aside>
   );
 }
